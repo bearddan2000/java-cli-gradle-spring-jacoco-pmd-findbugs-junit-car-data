@@ -1,0 +1,74 @@
+plugins {
+    // we don’t need to *apply* the plugin to the root project, do we?
+    id 'pmd'
+}
+plugins {
+    // we don’t need to *apply* the plugin to the root project, do we?
+    id 'com.github.spotbugs' version '4.7.0' apply false
+}
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'application'
+
+repositories {
+    mavenCentral()
+}
+
+test {
+    reports {
+        junitXml.enabled = true
+        html.enabled = true
+    }
+
+    // Show test results.
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        csv.enabled true
+        html.destination file("${buildDir}/reports/html/jacoco")
+        xml.destination file("${buildDir}/reports/xml/jacoco")
+        csv.destination file("${buildDir}/reports/csv/jacoco")
+    }
+}
+
+dependencies {
+  compileOnly 'org.projectlombok:lombok:1.18.22'
+  annotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+  testCompileOnly 'org.projectlombok:lombok:1.18.22'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+
+  // https://mvnrepository.com/artifact/org.springframework/spring-context
+  implementation 'org.springframework:spring-context:5.3.11'
+
+  testImplementation 'junit:junit:4.12'
+  testImplementation 'org.springframework:spring-test:2.5'
+}
+
+
+apply plugin: 'com.github.spotbugs'
+spotbugs {
+    toolVersion = '4.2.2'
+    reportsDir = file("$project.buildDir/reports/findbugs")
+}
+
+tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
+}
+
+// Configure PMD.
+pmd {
+    ignoreFailures = true
+    toolVersion = "6.23.0"                             // The version of PMD to use.
+    ruleSetFiles = files("config/pmd/pmd.xml")         // The location of the configuration file.
+    ruleSets = []                                      // Ignore the default rules. The ones this config
+                                                       // uses are set with the ruleSetFiles property.
+}
